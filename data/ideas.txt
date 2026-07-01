@@ -1,0 +1,5 @@
+pitch by pich win probabilities on an at bat basis
+    basic
+
+pitch tracing -> spray chart -> fielding shift(?)
+
