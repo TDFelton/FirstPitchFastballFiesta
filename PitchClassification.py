@@ -3,13 +3,27 @@ import pyarrow.dataset as pads
 import os
 import polars as pl
 from sympy import group
-from SMT_Data_Starter import readDataSubset
+import sys
+from data.SMT_Data_Starter import readDataSubset
+import sqlite3
 
 #Reading in the data subsets using ReadDataSubset function from SMT_Data_Starter.py
 ball_position_subset = readDataSubset('ball-positions',data_path="/Users/charlesmerkel/Desktop/SMT_Project/SMT-Data-Challenge-2026")
 ball_position = ball_position_subset.to_table().to_pandas()
 ball_events_subset = readDataSubset('ball-events',data_path="/Users/charlesmerkel/Desktop/SMT_Project/SMT-Data-Challenge-2026")
 ball_events = ball_events_subset.to_table().to_pandas()
+
+#Creating SQL Database to story Pitch Summary Table
+conn = sqlite3.connect("SMT_DATA.db")
+cur = conn.cursor()
+cur.execute('''CREATE TABLE IF NOT EXISTS pitch_summary (
+    game_string TEXT,
+    play_per_game INTEGER,
+    start_time REAL,
+    end_time REAL,
+    outcome INTEGER,
+    PRIMARY KEY (game_string, play_per_game)
+)''')
 
 
 #Building a pitch summary table for grouped by game and play
@@ -66,5 +80,34 @@ for (game, play), event in grouped_keys:
         "end_time": end_time,
         "outcome": outcome
     })
-
 print(summary_table[:10])
+
+
+cur.executemany('''INSERT INTO pitch_summary (game_string, play_per_game, start_time, end_time, outcome)
+                   VALUES (?, ?, ?, ?, ?)''', [(item["game_string"], item["play_per_game"], item["start_time"], item["end_time"], item["outcome"])
+                   for item in summary_table])
+#conn.close()
+
+ball_position_df = pd.DataFrame(ball_position)
+ball_position_df.to_sql(
+    "ball_positions", 
+    conn, 
+    if_exists="replace", 
+    index=False)
+
+cur.execute('''CREATE INDEX IF NOT EXISTS idx_ball_positions_game 
+                ON ball_positions(game_string, play_per_game)''')
+
+SQL1 = """
+    CREATE TABLE pitch_detail AS
+    SELECT ball_positions.*, pitch_summary.start_time, pitch_summary.end_time, pitch_summary.outcome
+    FROM ball_positions
+    LEFT JOIN pitch_summary ON ball_positions.game_string = pitch_summary.game_string AND ball_positions.play_per_game = pitch_summary.play_per_game
+    AND ball_positions.timestamp BETWEEN pitch_summary.start_time AND pitch_summary.end_time"""
+cur.execute("DROP TABLE IF EXISTS pitch_detail;")
+cur.execute(SQL1)
+conn.commit()
+conn.close()
+
+#.merge(
+#    pd.DataFrame(summary_table), on=["game_string", "play_per_game"], how="left")
