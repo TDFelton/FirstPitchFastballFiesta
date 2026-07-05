@@ -8,9 +8,9 @@ from data.SMT_Data_Starter import readDataSubset
 import sqlite3
 
 #Reading in the data subsets using ReadDataSubset function from SMT_Data_Starter.py
-ball_position_subset = readDataSubset('ball-positions',data_path="/Users/charlesmerkel/Desktop/SMT_Project/SMT-Data-Challenge-2026")
+ball_position_subset = readDataSubset('ball-positions',data_path="/Users/adrianveto/Downloads/Michigan/FirstPitchFastballFiesta/data")
 ball_position = ball_position_subset.to_table().to_pandas()
-ball_events_subset = readDataSubset('ball-events',data_path="/Users/charlesmerkel/Desktop/SMT_Project/SMT-Data-Challenge-2026")
+ball_events_subset = readDataSubset('ball-events',data_path="/Users/adrianveto/Downloads/Michigan/FirstPitchFastballFiesta/data")
 ball_events = ball_events_subset.to_table().to_pandas()
 
 #Creating SQL Database to story Pitch Summary Table
