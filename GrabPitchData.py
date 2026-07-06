@@ -15,11 +15,11 @@ from data.SMT_Data_Starter import readDataSubset
 ## 2. (later file) Use start and end time to tag ball positions throughout the pitch
 ## 3. Classify pitches by pitch type and find outcome (HR / barrel / not HR or barrel)
 
-# Pulling ball events data, filtering to only VAS away team for smaller testing sample size
+# Pulling ball events data, filtering to only PHD away team for smaller testing sample size
 ball_events_subset = readDataSubset('ball-events',data_path="/Users/adrianveto/Downloads/Michigan/FirstPitchFastballFiesta/data")
-ball_events = ball_events_subset.to_table(filter = (pads.field('home_team') == "VAS")).to_pandas()
+ball_events = ball_events_subset.to_table(filter = (pads.field('home_team') == "PHD")).to_pandas()
 # print("Number of events: " + str(ball_events.size))
-# ~160k events for VAS away team
+# ~160k events for PHD away team
 
 # Filtering for events where ball is pitched
 Pitches = ball_events[ball_events["ball_eventcode"] == 1]
@@ -40,7 +40,7 @@ Pitches = Pitches[["game_string", "play_per_game", "pitch_release_time", "pitch_
 
 # now incorporating the lineup data to get pitcher ID and first pitch data
 lineups_subset = readDataSubset('lineups',data_path="/Users/adrianveto/Downloads/Michigan/FirstPitchFastballFiesta/data")
-lineups = lineups_subset.to_table(filter = (pads.field('home_team') == "VAS")).to_pandas()
+lineups = lineups_subset.to_table(filter = (pads.field('home_team') == "PHD")).to_pandas()
 
 Pitches = Pitches.merge(lineups[["game_string", "play_per_game", "pitcher", "batter"]],
               on=["game_string", "play_per_game"], how="left")
@@ -74,7 +74,7 @@ Pitches = Pitches[["game_string", "play_per_game", "pitch_release_time", "pitch_
 # calculate velocity from first and final point and delta_y
 
 ball_positions_subset = readDataSubset('ball-positions',data_path="/Users/adrianveto/Downloads/Michigan/FirstPitchFastballFiesta/data")
-ball_positions = ball_positions_subset.to_table(filter = (pads.field('home_team') == "VAS")).to_pandas()
+ball_positions = ball_positions_subset.to_table(filter = (pads.field('home_team') == "PHD")).to_pandas()
 
 # create a temporary df to get ALL ball positions with game string and PPG
 temp_df = pd.merge(ball_positions[["game_string", "play_per_game", "timestamp", "ball_position_x", "ball_position_y", "ball_position_z"]], 
@@ -102,7 +102,7 @@ PitchPositions = PitchPositions.merge(second_pos, on=["game_string", "play_per_g
 PitchPositions = PitchPositions.merge(final_pos, on=["game_string", "play_per_game"], how="left", suffixes=("_left", "_right"))
 PitchPositions = PitchPositions.drop(columns=["pitch_release_time_y", "pitch_end_time_y", "pitch_release_time_left",
                              "pitch_end_time_left", "pitch_release_time_right", "pitch_end_time_right", "index", "index_y", "index_x"])
-PitchPositions = PitchPositions.drop(columns=["pitch_release_time", "pitch_end_time"])
+PitchPositions = PitchPositions.drop(columns=["pitch_release_time_x", "pitch_end_time_x"])
 # print(PitchPositions.head())
 
 # Now that we have the positions, we want to project through the first two points to find an expected endpoint at the final x and z
@@ -127,6 +127,5 @@ PitchPositions = PitchPositions.drop(columns=["delta_y", "time"])
 PitchPositions = PitchPositions.drop(columns=["first_timestamp", "first_ball_position_x", "first_ball_position_y", "first_ball_position_z",
                                               "second_timestamp", "second_ball_position_x", "second_ball_position_y", "second_ball_position_z",
                                               "final_timestamp", "final_ball_position_x", "final_ball_position_y", "final_ball_position_z"])
-print(PitchPositions.head())
-
-PitchPositions.to_csv("VAS_pitches.csv", index=False)
+PitchPositions = PitchPositions[PitchPositions["game_string"] != "NA"]
+PitchPositions.to_csv("PHD_pitches.csv", index=False)
