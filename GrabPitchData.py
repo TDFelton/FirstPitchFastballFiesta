@@ -34,7 +34,7 @@ EndPitchEvents = ball_events[((ball_events["ball_eventcode"] == 2) | (ball_event
                             & ball_events["ball_eventcode"].shift(1) == 1]
 Pitches = pd.merge(Pitches, EndPitchEvents, on=["game_string", "play_per_game"], how = "left")
 Pitches = Pitches.rename(columns={'timestamp':'pitch_end_time'})
-Pitches["result_in_play"] = (Pitches["ball_eventcode"] == 4)
+Pitches["result_in_play"] = (Pitches["ball_eventcode"] == 4) # COULD BE FOUL
 Pitches = Pitches[["game_string", "play_per_game", "pitch_release_time", "pitch_end_time", "result_in_play"]]
 
 # now incorporating the lineup data to get pitcher ID and first pitch data
@@ -64,7 +64,44 @@ HREvents = ball_events[(ball_events["ball_eventcode"] == 11)]
 Pitches = pd.merge(Pitches, HREvents, on=["game_string", "play_per_game"], how = "left")
 Pitches["result_HR"] = (Pitches["ball_eventcode"] == 11)
 Pitches = Pitches[["game_string", "play_per_game", "pitch_release_time", "pitch_end_time", "first_pitch", "pitcher", "batter", "result_in_play", "result_HR"]]
-print(Pitches.head())
+# print(Pitches.head())
 
-### TODO pitches DF: merge with barrels to find if result is a barrel
-### TODO other: find points on each pitch and regression
+
+# finding the points of each pitch
+# goal: get the first point, second point, and final point of each pitch (and their timestamps)
+# use the first two points to trace a line (incl. gravity) to home plate for break
+# calculate velocity from first and final point and delta_y
+
+ball_positions_subset = readDataSubset('ball-positions',data_path="/Users/adrianveto/Downloads/Michigan/FirstPitchFastballFiesta/data")
+ball_positions = ball_positions_subset.to_table(filter = (pads.field('away_team') == "PHD")).to_pandas()
+
+# create a temporary df to get ALL ball positions with game string and PPG
+temp_df = pd.merge(ball_positions[["game_string", "play_per_game", "timestamp", "ball_position_x", "ball_position_y", "ball_position_z"]], 
+                   Pitches[["game_string", "play_per_game", "pitch_release_time", "pitch_end_time"]],
+                   on=["game_string", "play_per_game"])
+# filtering out plays outside the pitch time
+temp_df = temp_df[(temp_df["timestamp"] >= temp_df["pitch_release_time"]) &
+                  (temp_df["timestamp"] <= temp_df["pitch_end_time"])]
+# making sure everything is chronological so grabbing by index works
+temp_df = temp_df.sort_values(by=["game_string", "play_per_game", "timestamp"])
+
+# grouping by game and PPG
+grouped = temp_df.groupby(["game_string", "play_per_game"])
+first_pos = grouped.nth(0).reset_index()
+second_pos = grouped.nth(1).reset_index()
+final_pos = grouped.nth(-1).reset_index()
+
+# must rename columns
+first_pos = first_pos.rename(columns={"timestamp":"first_timestamp", "ball_position_x":"first_ball_position_x", "ball_position_y":"first_ball_position_y", "ball_position_z":"first_ball_position_z"})
+second_pos = second_pos.rename(columns={"timestamp":"second_timestamp", "ball_position_x":"second_ball_position_x", "ball_position_y":"second_ball_position_y", "ball_position_z":"second_ball_position_z"})
+final_pos = final_pos.rename(columns={"timestamp":"final_timestamp", "ball_position_x":"final_ball_position_x", "ball_position_y":"final_ball_position_y", "ball_position_z":"final_ball_position_z"})
+
+PitchPositions = Pitches.merge(first_pos, on=["game_string", "play_per_game"], how="left")
+PitchPositions = PitchPositions.merge(second_pos, on=["game_string", "play_per_game"], how="left")
+PitchPositions = PitchPositions.merge(final_pos, on=["game_string", "play_per_game"], how="left", suffixes=("_left", "_right"))
+PitchPositions = PitchPositions.drop(columns=["pitch_release_time_y", "pitch_end_time_y", "pitch_release_time_left",
+                             "pitch_end_time_left", "pitch_release_time_right", "pitch_end_time_right", "index", "index_y", "index_x"])
+PitchPositions = PitchPositions.rename(columns={"pitch_release_time_x":"pitch_release_time",
+                                                "pitch_end_time_x":"pitch_end_time"})
+print(PitchPositions.columns)
+print(PitchPositions.head())
