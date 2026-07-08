@@ -32,11 +32,12 @@ Pitches = Pitches.rename(columns={'timestamp':'pitch_release_time'})
 # AND previous play was a pitch
 EndPitchEvents = ball_events[((ball_events["ball_eventcode"] == 2) | (ball_events["ball_eventcode"] == 4)
                               | (ball_events["ball_eventcode"] == 9) | (ball_events["ball_eventcode"] == 16))
-                            & ball_events["ball_eventcode"].shift(1) == 1]
+                            & (ball_events["ball_eventcode"].shift(1) == 1)]
 Pitches = pd.merge(Pitches, EndPitchEvents, on=["game_string", "play_per_game"], how = "left")
 Pitches = Pitches.rename(columns={'timestamp':'pitch_end_time'})
 Pitches["result_in_play"] = (Pitches["ball_eventcode"] == 4) # COULD BE FOUL
 Pitches = Pitches[["game_string", "play_per_game", "pitch_release_time", "pitch_end_time", "result_in_play"]]
+Pitches = Pitches.drop_duplicates()
 
 # now incorporating the lineup data to get pitcher ID and first pitch data
 lineups_subset = readDataSubset('lineups',data_path="/Users/adrianveto/Downloads/Michigan/FirstPitchFastballFiesta/data")
@@ -66,6 +67,7 @@ Pitches = pd.merge(Pitches, HREvents, on=["game_string", "play_per_game"], how =
 Pitches["result_HR"] = (Pitches["ball_eventcode"] == 11)
 Pitches = Pitches[["game_string", "play_per_game", "pitch_release_time", "pitch_end_time", "first_pitch", "pitcher", "batter", "result_in_play", "result_HR"]]
 # print(Pitches.head())
+Pitches = Pitches.drop_duplicates()
 
 
 # finding the points of each pitch
