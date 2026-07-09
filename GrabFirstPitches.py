@@ -30,13 +30,14 @@ Pitches = Pitches.rename(columns={'timestamp':'pitch_release_time'})
 # finding the end of every pitch: filter for contact, ball caught by catcher, or ball in dirt
 # also include deflection (for HBP)
 # AND previous play was a pitch
-EndPitchEvents = ball_events[((ball_events["ball_eventcode"] == 2) | (ball_events["ball_eventcode"] == 4)
-                              | (ball_events["ball_eventcode"] == 9) | (ball_events["ball_eventcode"] == 16))
-                            & ball_events["ball_eventcode"].shift(1) == 1]
+EndPitchEvents = ball_events[(((ball_events["ball_eventcode"] == 2) | (ball_events["ball_eventcode"] == 4)
+                              | (ball_events["ball_eventcode"] == 9) | (ball_events["ball_eventcode"] == 16)))
+                            & (ball_events["ball_eventcode"].shift(1) == 1)]
 Pitches = pd.merge(Pitches, EndPitchEvents, on=["game_string", "play_per_game"], how = "left")
 Pitches = Pitches.rename(columns={'timestamp':'pitch_end_time'})
 Pitches["result_in_play"] = (Pitches["ball_eventcode"] == 4) # COULD BE FOUL
 Pitches = Pitches[["game_string", "play_per_game", "pitch_release_time", "pitch_end_time", "result_in_play"]]
+Pitches = Pitches.drop_duplicates()
 
 # now incorporating the lineup data to get pitcher ID and first pitch data
 lineups_subset = readDataSubset('lineups',data_path="/Users/adrianveto/Downloads/Michigan/FirstPitchFastballFiesta/data")
@@ -59,8 +60,9 @@ Pitches["first_pitch"] = (Pitches["batter"] != Pitches["prev_batter"])
 Pitches = Pitches[["game_string", "play_per_game", "pitch_release_time", "pitch_end_time", "result_in_play", "first_pitch", "pitcher", "batter"]]
 
 # filter for just first pitches
-Pitches = Pitches[Pitches["first_pitch"] == True]
-print(Pitches.head())
-print(Pitches.size)
+Pitches = Pitches[(Pitches["first_pitch"] == True)]
+# print(Pitches.head())
+print(len(Pitches))
+
 
 Pitches.to_csv("first_pitches.csv", index=False)
