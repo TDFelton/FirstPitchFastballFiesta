@@ -17,7 +17,7 @@ from data.SMT_Data_Starter import readDataSubset
 
 # Pulling ball events data, filtering to only PHD away team for smaller testing sample size
 ball_events_subset = readDataSubset('ball-events',data_path="/Users/adrianveto/Downloads/Michigan/FirstPitchFastballFiesta/data")
-ball_events = ball_events_subset.to_table(filter = (pads.field('home_team') == "PHD")).to_pandas()
+ball_events = ball_events_subset.to_table().to_pandas()
 # print("Number of events: " + str(ball_events.size))
 # ~160k events for PHD away team
 
@@ -41,7 +41,7 @@ Pitches = Pitches.drop_duplicates()
 
 # now incorporating the lineup data to get pitcher ID and first pitch data
 lineups_subset = readDataSubset('lineups',data_path="/Users/adrianveto/Downloads/Michigan/FirstPitchFastballFiesta/data")
-lineups = lineups_subset.to_table(filter = (pads.field('home_team') == "PHD")).to_pandas()
+lineups = lineups_subset.to_table().to_pandas()
 
 Pitches = Pitches.merge(lineups[["game_string", "play_per_game", "pitcher", "batter"]],
               on=["game_string", "play_per_game"], how="left")
@@ -76,7 +76,7 @@ Pitches = Pitches.drop_duplicates()
 # calculate velocity from first and final point and delta_y
 
 ball_positions_subset = readDataSubset('ball-positions',data_path="/Users/adrianveto/Downloads/Michigan/FirstPitchFastballFiesta/data")
-ball_positions = ball_positions_subset.to_table(filter = (pads.field('home_team') == "PHD")).to_pandas()
+ball_positions = ball_positions_subset.to_table().to_pandas()
 
 # create a temporary df to get ALL ball positions with game string and PPG
 temp_df = pd.merge(ball_positions[["game_string", "play_per_game", "timestamp", "ball_position_x", "ball_position_y", "ball_position_z"]], 
@@ -130,4 +130,6 @@ PitchPositions = PitchPositions.drop(columns=["first_timestamp", "first_ball_pos
                                               "second_timestamp", "second_ball_position_x", "second_ball_position_y", "second_ball_position_z",
                                               "final_timestamp", "final_ball_position_x", "final_ball_position_y", "final_ball_position_z"])
 PitchPositions = PitchPositions[PitchPositions["game_string"] != "NA"]
-PitchPositions.to_csv("PHD_pitches.csv", index=False)
+print("Grabbed", len(PitchPositions), "pitches")
+print(PitchPositions.head())
+PitchPositions.to_csv("pitches.csv", index=False)

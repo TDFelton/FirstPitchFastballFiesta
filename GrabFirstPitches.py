@@ -33,17 +33,6 @@ Pitches = Pitches.rename(columns={'timestamp':'pitch_release_time'})
 EndPitchEvents = ball_events[(((ball_events["ball_eventcode"] == 2) | (ball_events["ball_eventcode"] == 4)
                               | (ball_events["ball_eventcode"] == 9) | (ball_events["ball_eventcode"] == 16)))
                             & (ball_events["ball_eventcode"].shift(1) == 1)]
-
-# 1. Identify all rows that have duplicate pairs in the specified columns
-duplicate_mask = EndPitchEvents.duplicated(subset=['game_string', 'play_per_game'], keep=False)
-
-# 2. Filter the DataFrame using the mask and select just those two columns
-duplicate_rows = EndPitchEvents[duplicate_mask]
-
-# 3. Print the result
-print(duplicate_rows)
-
-
 Pitches = pd.merge(Pitches, EndPitchEvents, on=["game_string", "play_per_game"], how = "left")
 Pitches = Pitches.rename(columns={'timestamp':'pitch_end_time'})
 Pitches["result_in_play"] = (Pitches["ball_eventcode"] == 4) # COULD BE FOUL
