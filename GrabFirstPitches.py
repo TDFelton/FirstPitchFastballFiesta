@@ -16,7 +16,7 @@ from data.SMT_Data_Starter import readDataSubset
 ## 3. Classify pitches by pitch type and find outcome (HR / barrel / not HR or barrel)
 
 # Pulling ball events data, filtering to only PHD away team for smaller testing sample size
-ball_events_subset = readDataSubset('ball-events',data_path="/Users/adrianveto/Downloads/Michigan/FirstPitchFastballFiesta/data")
+ball_events_subset = readDataSubset('ball-events',data_path="./data")
 ball_events = ball_events_subset.to_table().to_pandas()
 # print("Number of events: " + str(ball_events.size))
 # ~160k events for PHD away team
@@ -39,7 +39,7 @@ Pitches["result_in_play"] = (Pitches["ball_eventcode"] == 4) # COULD BE FOUL
 Pitches = Pitches[["game_string", "play_per_game", "pitch_release_time", "pitch_end_time", "result_in_play"]]
 
 # now incorporating the lineup data to get pitcher ID and first pitch data
-lineups_subset = readDataSubset('lineups',data_path="/Users/adrianveto/Downloads/Michigan/FirstPitchFastballFiesta/data")
+lineups_subset = readDataSubset('lineups',data_path="./data")
 lineups = lineups_subset.to_table().to_pandas()
 
 Pitches = Pitches.merge(lineups[["game_string", "play_per_game", "pitcher", "batter"]],
@@ -60,6 +60,7 @@ Pitches = Pitches[["game_string", "play_per_game", "pitch_release_time", "pitch_
 
 # filter for just first pitches
 Pitches = Pitches[Pitches["first_pitch"] == True]
+Pitches = Pitches.drop_duplicates(keep='first')
 print(Pitches.head())
 print(Pitches.size)
 
