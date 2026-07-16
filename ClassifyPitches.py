@@ -3,7 +3,7 @@ from sklearn.cluster import KMeans
 import numpy as np
 import matplotlib.pyplot as plt
 
-Pitches = pd.read_csv("~/Downloads/Michigan/FirstPitchFastballFiesta/pitches.csv")
+Pitches = pd.read_csv("./pitches.csv")
 print(len(Pitches))
 
 # Goal: Use K-means clustering to get fastballs and non-fastballs from our existing DF
@@ -34,7 +34,7 @@ def classify_pitches(pitches_group):
 
 
 # now applying the clustering to each pitcher individually
-Pitches = Pitches.groupby("pitcher", group_keys=False).apply(classify_pitches, include_groups=True)
+Pitches = Pitches.groupby("pitcher", group_keys=False).apply(classify_pitches)
 print(Pitches.head())
 
 Pitches.to_csv("pitches_classified.csv", index=False)
