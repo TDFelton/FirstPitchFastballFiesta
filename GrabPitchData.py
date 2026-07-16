@@ -16,7 +16,7 @@ from data.SMT_Data_Starter import readDataSubset
 ## 3. Classify pitches by pitch type and find outcome (HR / barrel / not HR or barrel)
 
 # Pulling ball events data, filtering to only PHD away team for smaller testing sample size
-ball_events_subset = readDataSubset('ball-events',data_path="/Users/adrianveto/Downloads/Michigan/FirstPitchFastballFiesta/data")
+ball_events_subset = readDataSubset('ball-events',data_path="./data")
 ball_events = ball_events_subset.to_table().to_pandas()
 # print("Number of events: " + str(ball_events.size))
 # ~160k events for PHD away team
@@ -40,7 +40,7 @@ Pitches = Pitches[["game_string", "play_per_game", "pitch_release_time", "pitch_
 Pitches = Pitches.drop_duplicates()
 
 # now incorporating the lineup data to get pitcher ID and first pitch data
-lineups_subset = readDataSubset('lineups',data_path="/Users/adrianveto/Downloads/Michigan/FirstPitchFastballFiesta/data")
+lineups_subset = readDataSubset('lineups',data_path="./data")
 lineups = lineups_subset.to_table().to_pandas()
 
 Pitches = Pitches.merge(lineups[["game_string", "play_per_game", "pitcher", "batter"]],
@@ -75,7 +75,7 @@ Pitches = Pitches.drop_duplicates()
 # use the first two points to trace a line (incl. gravity) to home plate for break
 # calculate velocity from first and final point and delta_y
 
-ball_positions_subset = readDataSubset('ball-positions',data_path="/Users/adrianveto/Downloads/Michigan/FirstPitchFastballFiesta/data")
+ball_positions_subset = readDataSubset('ball-positions',data_path="./data")
 ball_positions = ball_positions_subset.to_table().to_pandas()
 
 # create a temporary df to get ALL ball positions with game string and PPG
