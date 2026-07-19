@@ -14,15 +14,6 @@ cur = conn.cursor()
 
 font = pygame.font.SysFont("bahnschrift", 36)
 
-cur.execute("""SELECT * 
-            FROM leaderboard2
-            ORDER BY barrels(fastball) DESC
-            LIMIT 15""")
-
-leaderboard = cur.fetchall()
-
-conn.close()
-
 def init_db(conn):
     cur = conn.cursor()
     leaders = ("""
