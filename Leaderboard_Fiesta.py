@@ -47,26 +47,26 @@ class Leaderboard():
         self.build()
 
     def build(self):
-        self.static.fill((18,20,26))
-        msg1 = self.font_title.render("First Pitch Barrel Leaders", True, (235, 238, 243))
+        self.static.fill((164,90,82))
+        msg1 = self.font_title.render("First Pitch Barrel Leaders", True, (255,250,240))
         msg_rect = msg1.get_rect(center = (self.width//2,60))
         self.static.blit(msg1, msg_rect)
 
-        msg2 = self.font_head.render("2025 SEASON     Qualified Hitters", True, (122,136,153))
+        msg2 = self.font_head.render("2025 SEASON     Qualified Hitters", True, (255,250,240))
         msg2_rect = msg2.get_rect(center = (self.width // 2, 92))
         self.static.blit(msg2,msg2_rect)
 
         head_y = 140
-        msg3 = self.font_head.render("#", True, (122,136,153))
+        msg3 = self.font_head.render("#", True, (255,250,240))
         msg_rect3 = msg3.get_rect(topright = (self.x_rank,head_y))
         self.static.blit(msg3, msg_rect3)
-        msg4 = self.font_head.render("Player", True, (122,136,153))
+        msg4 = self.font_head.render("Player", True, (255,250,240))
         msg_rect4 = msg4.get_rect(topright = (self.x_name,head_y))
         self.static.blit(msg4, msg_rect4)
-        msg5 = self.font_head.render("Barrels(On fastballs)", True, (122,136,153))
+        msg5 = self.font_head.render("Barrels(On fastballs)", True, (255,250,240))
         msg_rect5 = msg5.get_rect(topright = (self.x_barrels,head_y))
         self.static.blit(msg5, msg_rect5)
-        msg6 = self.font_head.render("Fiestas", True, (122,136,153))
+        msg6 = self.font_head.render("Fiestas", True, (255,250,240))
         msg_rect6 = msg6.get_rect(topright = (self.x_fiestas,head_y))
         self.static.blit(msg6, msg_rect6)
         pygame.draw.line(self.static,(44,49,59),(60, head_y + 24), (self.width - 60, head_y + 24))
@@ -75,23 +75,23 @@ class Leaderboard():
             y = self.rows_top + rank * self.row_height
 
             if rank % 2 == 1:
-                    pygame.draw.rect(self.static, (24,27,34),
+                    pygame.draw.rect(self.static, (255,250,205),
                                      (60, y-4, self.width - 120, self.row_height))
 
 
-            rank_surf = self.font_row.render(f"{rank}.", True, (235,238,243))
+            rank_surf = self.font_row.render(f"{rank}.", True, (0,0,0))
             rank_rect = rank_surf.get_rect(topright=(self.x_rank,y))
             self.static.blit(rank_surf, rank_rect)
 
-            name_surf = self.font_row.render(name, True, (235,238,243))
+            name_surf = self.font_row.render(name, True, (0,0,0))
             name_rect = name_surf.get_rect(topleft=(self.x_name - 60,y))
             self.static.blit(name_surf, name_rect)
 
-            bar_surf = self.font_row.render(f"{barrels} ({barrel_fastballs})", True, (235,238,243))
+            bar_surf = self.font_row.render(f"{barrels} ({barrel_fastballs})", True, (0,0,0))
             bar_rect = bar_surf.get_rect(topright=(self.x_barrels - 180,y))
             self.static.blit(bar_surf, bar_rect)
 
-            fiesta_surf = self.font_row.render(f"{fiestas}", True, (235,238,243))
+            fiesta_surf = self.font_row.render(f"{fiestas}", True, (0,0,0))
             fiesta_rect = bar_surf.get_rect(topright=(self.x_fiestas - 50,y))
             self.static.blit(fiesta_surf, fiesta_rect)
 
