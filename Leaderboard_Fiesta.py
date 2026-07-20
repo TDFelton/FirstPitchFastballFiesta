@@ -11,29 +11,16 @@ import sqlite3
 
 conn = sqlite3.connect("barrels.db")
 cur = conn.cursor()
-
+pygame.init()
 font = pygame.font.SysFont("bahnschrift", 36)
 
-def init_db(conn):
-    cur = conn.cursor()
-    leaders = ("""
-        CREATE TABLE IF NOT EXISTS barrels_ranking (
-            player_id TEXT PRIMARY KEY,
-            barrels INTEGER,
-            barrels_fastballs INTEGER
-        )
-    """)
-    cur.execute(leaders)
-    cur.execute("SELECT COUNT(player_id) FROM barrels_ranking")
-    if cur.fetchone()[0] == 0:
-        cur.executemany("INSERT INTO barrels_ranking VALUES (?, ?, ?)", rows)
-    conn.commit()
 
 def fetch_leaders(conn, limit=15):
     cur = conn.cursor()
     cur.execute("""
-                SELECT player_id, barrels, barrels_fastballs
+                SELECT player_id, barrels, barrels_fastballs, fiestas
                 FROM barrels_ranking
+                GROUP BY player_id
                 ORDER BY barrels DESC
                 LIMIT ?
                 """, (limit,))
@@ -41,7 +28,7 @@ def fetch_leaders(conn, limit=15):
 
 
 class Leaderboard():
-    def __init__(self, leaders, width = 600, height = 600, x_rank = 240, x_name = 300, x_barrels = 480):
+    def __init__(self, leaders, width = 600, height = 600, x_rank = 40, x_name = 130, x_barrels = 370, x_fiestas = 500):
         self.leaders = leaders
         self.width = width
         self.height = height
@@ -49,6 +36,7 @@ class Leaderboard():
         self.x_rank = x_rank
         self.x_name = x_name
         self.x_barrels = x_barrels
+        self.x_fiestas = x_fiestas
         self.font_title = pygame.font.SysFont("Oswald.ttf", 46)
         self.font_head = pygame.font.SysFont("Oswald.ttf", 30)
         self.font_row = pygame.font.SysFont("Oswald.ttf",18)
@@ -75,12 +63,15 @@ class Leaderboard():
         msg4 = self.font_head.render("Player", True, (122,136,153))
         msg_rect4 = msg4.get_rect(topright = (self.x_name,head_y))
         self.static.blit(msg4, msg_rect4)
-        msg5 = self.font_head.render("BRL(FB)", True, (122,136,153))
+        msg5 = self.font_head.render("Barrels(On fastballs)", True, (122,136,153))
         msg_rect5 = msg5.get_rect(topright = (self.x_barrels,head_y))
         self.static.blit(msg5, msg_rect5)
+        msg6 = self.font_head.render("Fiestas", True, (122,136,153))
+        msg_rect6 = msg6.get_rect(topright = (self.x_fiestas,head_y))
+        self.static.blit(msg6, msg_rect6)
         pygame.draw.line(self.static,(44,49,59),(60, head_y + 24), (self.width - 60, head_y + 24))
 
-        for rank, (name, barrels, barrel_fastballs) in enumerate(self.leaders, start = 1):
+        for rank, (name, barrels, barrel_fastballs, fiestas) in enumerate(self.leaders, start = 1):
             y = self.rows_top + rank * self.row_height
 
             if rank % 2 == 1:
@@ -93,12 +84,16 @@ class Leaderboard():
             self.static.blit(rank_surf, rank_rect)
 
             name_surf = self.font_row.render(name, True, (235,238,243))
-            name_rect = name_surf.get_rect(topleft=(self.x_name,y))
+            name_rect = name_surf.get_rect(topleft=(self.x_name - 60,y))
             self.static.blit(name_surf, name_rect)
 
             bar_surf = self.font_row.render(f"{barrels} ({barrel_fastballs})", True, (235,238,243))
-            bar_rect = bar_surf.get_rect(topright=(self.x_barrels,y))
+            bar_rect = bar_surf.get_rect(topright=(self.x_barrels - 180,y))
             self.static.blit(bar_surf, bar_rect)
+
+            fiesta_surf = self.font_row.render(f"{fiestas}", True, (235,238,243))
+            fiesta_rect = bar_surf.get_rect(topright=(self.x_fiestas - 50,y))
+            self.static.blit(fiesta_surf, fiesta_rect)
 
     def draw(self):
         self.screen.blit(self.static, (0,0))
